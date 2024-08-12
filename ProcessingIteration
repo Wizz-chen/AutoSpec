@@ -1,10 +1,14 @@
+# install & load neccessary packages
+library(combinat)
+library(prospectr)
+
 # Define spectral processing functions and their names
 msc <- function(df){as.data.frame(prospectr::msc(X = df))}
 snv <- function(df){as.data.frame(standardNormalVariate(X=df))}
 SG1 <- function(df){as.data.frame(savitzkyGolay(X=df, m=1, p=3, w=17))}
 SG2 <- function(df){as.data.frame(savitzkyGolay(X=df, m=2, p=3, w=17))}
 movav <- function(df){as.data.frame(prospectr::movav(df, w=5))}
-BL <- function(df){as.data.frame(baseline(df, wav=as.numeric(colnames(df[,-c(1:9)]))))}
+BL <- function(df){as.data.frame(baseline(df, wav=as.numeric(colnames(df))))}
 
 # Combining different types of derivates and scatter corrections
 mult.fcs_snvSG1 <- c(BL, movav, SG1, snv)
