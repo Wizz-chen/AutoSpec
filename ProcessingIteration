@@ -1,0 +1,127 @@
+# Define spectral processing functions and their names
+msc <- function(df){as.data.frame(prospectr::msc(X = df))}
+snv <- function(df){as.data.frame(standardNormalVariate(X=df))}
+SG1 <- function(df){as.data.frame(savitzkyGolay(X=df, m=1, p=3, w=17))}
+SG2 <- function(df){as.data.frame(savitzkyGolay(X=df, m=2, p=3, w=17))}
+movav <- function(df){as.data.frame(prospectr::movav(df, w=5))}
+BL <- function(df){as.data.frame(baseline(df, wav=as.numeric(colnames(df[,-c(1:9)]))))}
+
+# Combining different types of derivates and scatter corrections
+mult.fcs_snvSG1 <- c(BL, movav, SG1, snv)
+names(mult.fcs_snvSG1) <- c("BL", "movav", "SG1", "snv")
+mult.fcs_snvSG2 <- c(BL, movav, SG2, snv)
+names(mult.fcs_snvSG2) <- c("BL", "movav", "SG2", "snv")
+mult.fcs_mscSG1 <- c(BL, movav, SG1, msc)
+names(mult.fcs_mscSG1) <- c("BL", "movav", "SG1", "msc")
+mult.fcs_mscSG2 <- c(BL, movav, SG2, msc)
+names(mult.fcs_mscSG2) <- c("BL", "movav", "SG2", "msc")
+
+
+# Generate all possible orders of the functions #mult.fcs_snvSG1
+orders_snvSG1 <- permn(names(mult.fcs_snvSG1))
+results_snvSG1_all <- list()
+
+# loop over all possible orders
+for (i in 1:length(orders_snvSG1)) {
+  order <- orders_snvSG1[[i]]
+  order_results_snvSG1 <- list()
+
+  for (j in 1:length(order)) {
+    fns <- mult.fcs_snvSG1[match(order[j:length(order)], names(mult.fcs_snvSG1))]
+    
+    result_name <- paste(order[j:length(order)], collapse = "_")
+    result <- spc
+    for (fn in fns) {
+      result <- fn(result)
+    }
+    order_results_snvSG1[[result_name]] <- result
+  }
+  
+  results_snvSG1_all[[paste(order, collapse = "_")]] <- order_results_snvSG1
+  unl.res <- unlist(results_snvSG1_all,recursive=FALSE, use.names = TRUE)
+  names(unl.res) <- substring(names(unl.res), 18)
+  fin_res_snvSG1_all <- unl.res[!duplicated(unl.res)]
+}
+
+
+# Generate all possible orders of the functions #mult.fcs_snvSG2 
+orders_snvSG2 <- permn(names(mult.fcs_snvSG2))
+results_snvSG2_all <- list()
+for (i in 1:length(orders_snvSG2)) {
+  order <- orders_snvSG2[[i]]
+  order_results_snvSG2 <- list()
+  for (j in 1:length(order)) {
+    fns <- mult.fcs_snvSG2[match(order[j:length(order)], names(mult.fcs_snvSG2))]
+    result_name <- paste(order[j:length(order)], collapse = "_")
+    result <- spc
+    for (fn in fns) {
+      result <- fn(result)
+    }
+    colnames(result) <- paste0(colnames(result))
+    order_results_snvSG2[[result_name]] <- result
+  }
+  results_snvSG2_all[[paste(order, collapse = "_")]] <- order_results_snvSG2
+}
+unl.res <- unlist(results_snvSG2_all,recursive=FALSE, use.names = TRUE)
+names(unl.res) <- substring(names(unl.res), 18)
+fin_res_snvSG2_all <- unl.res[!duplicated(unl.res)]
+
+
+# Generate all possible orders of the functions #mult.fcs_mscSG1
+orders_mscSG1 <- permn(names(mult.fcs_mscSG1))
+results_mscSG1_all <- list()
+for (i in 1:length(orders_mscSG1)) {
+  order <- orders_mscSG1[[i]]
+  order_results_mscSG1 <- list()
+  for (j in 1:length(order)) {
+    fns <- mult.fcs_mscSG1[match(order[j:length(order)], names(mult.fcs_mscSG1))]
+    result_name <- paste(order[j:length(order)], collapse = "_")
+    result <- rawBu_all
+    for (fn in fns) {
+      result <- fn(result)
+    }
+    order_results_mscSG1[[result_name]] <- result
+  }
+  results_mscSG1_all[[paste(order, collapse = "_")]] <- order_results_mscSG1
+}
+unl.res <- unlist(results_mscSG1_all,recursive=FALSE, use.names = TRUE)
+names(unl.res) <- substring(names(unl.res), 18)
+fin_res_mscSG1_all <- unl.res[!duplicated(unl.res)]
+
+
+# Generate all possible orders of the functions #mult.fcs_mscSG2
+orders_mscSG2 <- permn(names(mult.fcs_mscSG2))
+results_mscSG2_all <- list()
+for (i in 1:length(orders_mscSG2)) {
+  order <- orders_mscSG2[[i]]
+  order_results_mscSG2 <- list()
+  for (j in 1:length(order)) {
+    fns <- mult.fcs_mscSG2[match(order[j:length(order)], names(mult.fcs_mscSG2))]
+    result_name <- paste(order[j:length(order)], collapse = "_")
+    result <- rawBu_all
+    for (fn in fns) {
+      result <- fn(result)
+    }
+    order_results_mscSG2[[result_name]] <- result
+  }
+  results_mscSG2_all[[paste(order, collapse = "_")]] <- order_results_mscSG2
+  unl.res <- unlist(results_mscSG2_all,recursive=FALSE, use.names = TRUE)
+  names(unl.res) <- substring(names(unl.res), 18)
+  fin_res_mscSG2_all <- unl.res[!duplicated(unl.res)]
+}
+
+
+spc_list_tot <- c(fin_res_mscSG1_all, fin_res_mscSG2_all, fin_res_snvSG1_all, fin_res_snvSG2_all)
+spc_list <- spc_list_tot[!duplicated(spc_list_tot)]
+
+
+
+
+
+
+
+
+
+
+
+
