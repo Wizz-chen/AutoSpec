@@ -80,7 +80,7 @@ for (i in 1:length(orders_mscSG1)) {
   for (j in 1:length(order)) {
     fns <- mult.fcs_mscSG1[match(order[j:length(order)], names(mult.fcs_mscSG1))]
     result_name <- paste(order[j:length(order)], collapse = "_")
-    result <- rawBu_all
+    result <- spc
     for (fn in fns) {
       result <- fn(result)
     }
@@ -102,7 +102,7 @@ for (i in 1:length(orders_mscSG2)) {
   for (j in 1:length(order)) {
     fns <- mult.fcs_mscSG2[match(order[j:length(order)], names(mult.fcs_mscSG2))]
     result_name <- paste(order[j:length(order)], collapse = "_")
-    result <- rawBu_all
+    result <- spc
     for (fn in fns) {
       result <- fn(result)
     }
