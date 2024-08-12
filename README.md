@@ -6,6 +6,6 @@ A automized tool to iterate and combine various spectral pre-treatments over NIR
 Author: Wizz-chen
 Contribution: Pull requests and error corrections are welcome.
 
-## License:
+## License
 MIT License (see LICENSE.md)
 
