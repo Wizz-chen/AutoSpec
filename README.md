@@ -7,5 +7,5 @@ Author: Wizz-chen
 Contribution: Pull requests and error corrections are welcome.
 
 ## License
-MIT License (see LICENSE.md)
+ GNU GENERAL PUBLIC LICENSE Version 2, June 1991 (see LICENSE.md)
 
