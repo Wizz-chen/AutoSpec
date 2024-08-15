@@ -1,6 +1,14 @@
+# neccessary files: spc, Category, Parameter
+
+
 # install & load neccessary packages
 library(combinat)
 library(prospectr)
+library(e1071)
+library(caret)
+library(pls)
+
+#################################### SPECTRA PRE-PROCESSING ####################################
 
 # Define spectral processing functions and their names
 msc <- function(df){as.data.frame(prospectr::msc(X = df))}
@@ -119,11 +127,66 @@ spc_list_tot <- c(fin_res_mscSG1_all, fin_res_mscSG2_all, fin_res_snvSG1_all, fi
 spc_list <- spc_list_tot[!duplicated(spc_list_tot)]
 
 
+#################################### SVM-C LOOPS ####################################
+spc_list_cat <- lapply(spc_list, function(df) {
+  df <- cbind(Category, df) 
+})
+
+spc_cat_confmat <- list()
+
+# loop over each element of the list and store results in new list
+for (i in seq_along(spc_list_cat)) {
+  const_cols <- sapply(spc_list_cat[[i]], function(x) length(unique(x)) == 1)
+  uSpc_list <- spc_list_cat[[i]][, !const_cols]
+  mod_Spc_cat <- svm(Category ~ ., data = uSpc_list)
+  pred_Spc_cat <- predict(mod_Spc_cat, uSpc_list)
+  name <- names(spc_list_cat)[i]
+  spc_cat_confmat[[i]] <- confusionMatrix(pred_Spc_cat, uSpc_list$Category)
+}
+names(spc_cat_confmat) <- names(spc_list_cat)
+
+# create an empty data frame to store the accuracy values
+acc_Cat <- data.frame(Pretreatments = character(), Accuracy = numeric(), stringsAsFactors = FALSE)
+for (i in seq_along(spc_cat_confmat)) {
+  acc <- spc_cat_confmat[[i]]$overall[[1]]
+  acc_Cat <- rbind(acc_Cat, cbind(Pretreatments = names(spc_cat_confmat)[i], Accuracy = acc))
+  }
 
 
+#################################### PLS-R LOOPS ####################################
+spc_list_Param <- lapply(spc_list, function(df) {
+  df <- cbind(Parameter, df) 
+})
 
+PLSR_spc_Param <- list() 
 
+for(i in seq_along(spc_list_Param)) {
+  data_PLS <- spc_list_Param[[i]]
+  
+  # Fit PLSR model, get optimal number of PCs
+  PLSR_model <- plsr(Parameter ~ ., data=data_PLS, scale = TRUE, validation = "LOO", ncomp = 20)
+  ncomp1Sigma <- selectNcomp(PLSR_model, method = "onesigma")
+  ncomp <- ifelse(ncomp1Sigma=="Inf"| ncomp1Sigma == 0, 20, ncomp1Sigma)
+  PLSR_model <- plsr(Parameter ~ ., data=data_PLS, scale = TRUE, validation = "LOO", ncomp = ncomp)
+  
+  RMSEP <- pls::RMSEP(PLSR_model, ncomp=ncomp1Sigma, estimate="CV", intercept=FALSE)
+  R2 <- pls::R2(PLSR_model, ncomp = ncomp1Sigma, estimate = "CV", intercept = FALSE)
+  
+  PLSR_spc_Param[[i]] <- list(R2=R2, RMSEP=RMSEP)
+}
 
+names(PLSR_spc_Param) <- names(spc_list_Param)
+
+res_PLSR_spc <- data.frame(Pretreats = character(), comps = numeric(), R2 = numeric(), 
+                              RMSEP = numeric(), stringsAsFactors = FALSE)
+
+for (i in seq_along(PLSR_spc_Param)) {
+  pretreats <- names(PLSR_spc_Param)[i]
+  R2 <-  PLSR_spc_Param[[i]]$R2[[1]]
+  comps <-  PLSR_spc_Param[[i]]$R2[[3]]
+  RMSEP <-  PLSR_spc_Param[[i]]$RMSEP[[1]]
+  res_PLSR_spc[i,] <- c(pretreats, comps, R2,  RMSEP)
+}
 
 
 
